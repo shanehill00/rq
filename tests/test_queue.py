@@ -409,3 +409,17 @@ class TestFailedQueue(RQTestCase):
         q = Queue(async=False)
         job = q.enqueue(some_calculation, args=(2, 3))
         self.assertEqual(job.return_value, 6)
+
+    def test_unique_job(self):
+        """Testing unique jobs are actually unique"""
+        q = Queue('example')
+
+        unique_id = "2"
+
+        job1 = q.enqueue("foo", "foo", unique_id=unique_id)
+
+        # enqueue a job with a different function.
+        # if the job is unique then the data property will not change
+        job2 = q.enqueue("bar", "foo", unique_id=unique_id)
+
+        self.assertEqual(job1.data, job2.data)
