@@ -1,4 +1,5 @@
 import inspect
+
 from uuid import uuid4
 try:
     from cPickle import loads, dumps, UnpicklingError
@@ -110,6 +111,15 @@ class Job(object):
         # dependency could be job instance or id
         if depends_on is not None:
             job._dependency_id = depends_on.id if isinstance(depends_on, Job) else depends_on
+
+        unique_id = None
+        if kwargs is not None:
+            # unique_id is passed if we want to ensure a single job under this id
+            unique_id = kwargs.get('unique_id', None)
+
+        if unique_id is not None:
+            job.id = unique_id
+
         return job
 
     def get_status(self):

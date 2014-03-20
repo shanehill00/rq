@@ -1,4 +1,6 @@
 import uuid
+import logging
+logging.basicConfig(level=logging.INFO)
 
 from .connections import resolve_connection
 from .job import Job, Status
@@ -145,6 +147,32 @@ class Queue(object):
         contain options for RQ itself.
         """
         timeout = timeout or self._default_timeout
+
+        """
+        here we check for the existence of a job if we were passed a unique id.
+        if we find the job and the status is anything other than FINISHED then we return the job
+        otherwise set the job to None and continue executing code
+        """
+
+        job = None
+        unique_id = None
+        if kwargs is not None:
+            # unique_id is passed if we want to ensure a single job under this id
+            unique_id = kwargs.get('unique_id', None)
+
+        if unique_id is not None:
+            try:
+                job = Job.fetch(unique_id,connection=self.connection)
+                if job.get_status() != Status.FINISHED:
+                    return job
+                job = None
+
+            except NoSuchJobError:
+                job = None
+
+            except:
+                raise
+
 
         # TODO: job with dependency shouldn't have "queued" as status
         job = Job.create(func, args, kwargs, connection=self.connection,
