@@ -401,6 +401,9 @@ class Worker(object):
                        'Next one should arrive within {0} seconds.'.format(timeout))
 
     def execute_job(self, job):
+        self.main_work_horse(job)
+
+    def execute_job_old(self, job):
         """Spawns a work horse to perform the actual work and passes it a job.
         The worker will wait for the work horse and make sure it executes
         within the given timeout bounds, or will end the work horse with
@@ -447,7 +450,7 @@ class Worker(object):
 
         # os._exit() is the way to exit from childs after a fork(), in
         # constrast to the regular sys.exit()
-        os._exit(int(not success))
+        # os._exit(int(not success))
 
     def perform_job(self, job):
         """Performs the actual work of a job.  Will/should only be called
