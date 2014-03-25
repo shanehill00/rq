@@ -307,7 +307,6 @@ class Queue(object):
 
     def dequeue(self):
         """Dequeues the front-most job from this queue.
-
         Returns a Job instance, which can be executed or inspected.
         """
         job_id = self.pop_job_id()
@@ -315,6 +314,9 @@ class Queue(object):
             return None
         try:
             job = Job.fetch(job_id, connection=self.connection)
+            # set an expiration on the job we just dequeued so if 
+            # something crashes or dies the job will get removed and allow us to requeue it
+            self.connection.expire( self.key, (12 * 3600) )
         except NoSuchJobError as e:
             # Silently pass on jobs that don't exist (anymore),
             # and continue by reinvoking itself recursively
